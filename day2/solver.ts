@@ -1,16 +1,17 @@
-const log = <T>(x: T): T => (console.log(x), x)
-
 type GameSet = Record<'red' | 'green' | 'blue', number>
 
-const MAX: GameSet = {
-  red: 12,
-  green: 13,
-  blue: 14,
+const isPossible = (max: GameSet) => (set: GameSet): boolean => set.red <= max.red && set.green <= max.green && set.blue <= max.blue;
+
+const GAME_LOG_PATTERN = /^Game (?<id>\d+): (?<results>.*)$/;
+
+const parseGameLog = (rawGame: string): { id: number, sets: readonly GameSet[] } => {
+  const { id, results } = GAME_LOG_PATTERN.exec(rawGame)?.groups ?? {};
+
+  return {
+    id: parseInt(id, 10),
+    sets: results.split('; ').map(parseGameSet),
+  };
 };
-
-const isPossible = (set: GameSet): boolean => set.red <= MAX.red && set.green <= MAX.green && set.blue <= MAX.blue;
-
-const GAME_ROW_PATTERN = /^Game (?<id>\d+): (?<results>.*)$/;
 
 // parse a string like `3 blue, 4 red, 5 green`
 const parseGameSet = (rawSet: string): GameSet =>
@@ -21,16 +22,15 @@ const parseGameSet = (rawSet: string): GameSet =>
   }, { red: 0, green: 0, blue: 0 })
 
 export const solvePart1 = (input: string[]): number => input
-  .map((row) => {
-    const { id, results } = GAME_ROW_PATTERN.exec(row)?.groups ?? {};
+  .map(parseGameLog)
+  .filter(({ sets }) => sets.every(isPossible({ red: 12, green: 13, blue: 14 })))
+  .reduce((sum, { id }) => sum + id, 0)
 
-    return {
-      id: parseInt(id, 10),
-      sets: results.split('; ').map(parseGameSet),
-    };
-  })
-  .filter(({ sets }) => sets.every(isPossible))
-  .reduce((acc, { id }) => acc + id, 0)
+export const solvePart2 = (input: string[]): number => input
+  .map(parseGameLog)
+  .map(({ sets }) =>
+    Math.max(...sets.map(s => s.red)) *
+    Math.max(...sets.map(s => s.green)) *
+    Math.max(...sets.map(s => s.blue)))
+  .reduce((sum, x) => sum + x, 0)
 
-// TODO
-export const solvePart2 = (input: string[]): number => 0;
