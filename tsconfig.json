@@ -1,0 +1,6 @@
+{
+  "allowImportingTsExtensions": true,
+  "compilerOptions": {
+    "target": "esnext"
+  }
+}
